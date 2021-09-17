@@ -5,6 +5,10 @@ from abc import ABCMeta, abstractmethod
 
 
 class FuzzyMembershipFunction(metaclass=ABCMeta):
+    """
+    Base class for membership functions in fuzzy logic.
+
+    """
     @abstractmethod
     def __call__(self, fuzzy_value: float) -> float:
         pass
@@ -23,10 +27,10 @@ class TrapezoidFunction(FuzzyMembershipFunction):
             max_full_boundary: float,
             upper_boundary: float,
     ) -> None:
-        assert lower_boundary < min_full_boundary < \
-               max_full_boundary < upper_boundary
+        assert lower_boundary < min_full_boundary <= max_full_boundary < \
+               upper_boundary
 
-        self.lower_boundary= lower_boundary
+        self.lower_boundary = lower_boundary
         self.min_full_boundary = min_full_boundary
         self.max_full_boundary = max_full_boundary
         self.upper_boundary = upper_boundary
