@@ -1,7 +1,3 @@
-import pytest
-
-from fuzzy.functions import TrapezoidFunction, InfiniteTrapezoidFunction
-
 """
     lower_boundary: float
     min_full_boundary: float
@@ -31,6 +27,10 @@ Unit tests TrapezoidFunction.__call__:
   etc.
 """
 
+import pytest
+
+from fuzzy.functions import TrapezoidFunction, InfiniteTrapezoidFunction
+
 
 def test_typical_trapezoid_membership_objects():
     # Typical trapezoid membership functions - with start, end, ascending slope,
@@ -54,7 +54,7 @@ def test_wrong_infinite_trapezoid_membership_function_objects():
     pytest.raises(AssertionError, TrapezoidFunction,
                   -1, 0., 1., float('inf'))
 
-    # There can be only one
+    # There can be only one inf
     pytest.raises(AssertionError, TrapezoidFunction,
                   float('-inf'), 0., 1., float('inf'))
     pytest.raises(AssertionError, TrapezoidFunction,
