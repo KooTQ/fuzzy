@@ -135,6 +135,12 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
       *. Slope - either ascending or descending, start of slope is left vertex
         and end of slope is right vertex
 
+    Examples of left InfiniteTrapezoidFunction:
+    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\\_
+    ‾‾‾‾‾‾‾‾\\________
+    ‾\\_______________
+
+
     For left InfiniteTrapezoidFunction order of parts and vertices is:
       *. High plateau
       *. Left vertex (max full boundary)
@@ -142,6 +148,10 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
       *. Right vertex (upper boundary)
       *. Low plateau
 
+    Examples of right InfiniteTrapezoidFunction:
+    _____/‾‾‾‾‾
+    _/‾‾‾‾‾‾‾‾‾
+    _________/‾
     For right InfiniteTrapezoidFunction order of parts and vertices  is:
       *. Low plateau
       *. Left vertex (lower boundary)
@@ -155,6 +165,14 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
             right_vertex: float,
             infinite_side: str = 'left'
     ) -> None:
+        """
+        Construct trapezoid membership function based with single infinite side.
+
+        :param left_vertex: Point of start of slope.
+        :param right_vertex: Point of end of slope.
+        :param infinite_side: Defining which side contains high plateau;
+          possible values ```'left'``` and ```'right'```.
+        """
         assert infinite_side in ['left', 'right']
         assert float('-inf') < left_vertex < right_vertex < float('inf')
 
@@ -204,6 +222,20 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
 
 
 class TriangularFunction(TrapezoidFunction):
+    """
+    TriangularFunction is membership trapezoid function without high plateau.
+
+    Examples of TriangularFunction:
+    _____/\\_____
+    _/\\_________
+    _________/\\_
+    """
     def __init__(self, left: float, top: float, right: float):
+        """
+        Construct triangular membership function.
+        :param left: End of start low plateau, start of ascending slope.
+        :param top: End of ascending slope and start of descending slope.
+        :param right: End of descending slope, start of end low plateau.
+        """
         super().__init__(lower_boundary=left, min_full_boundary=top,
                          max_full_boundary=top, upper_boundary=right)
