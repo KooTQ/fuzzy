@@ -218,7 +218,7 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
             _input_point = max([input_point, self.max_full_boundary])
         else:
             _input_point = min([input_point, self.min_full_boundary])
-        return super()(_input_point)
+        return super().__call__(_input_point)
 
 
 class TriangularFunction(TrapezoidFunction):
