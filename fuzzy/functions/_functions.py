@@ -3,10 +3,10 @@ Fuzzy set membership functions calculate degree of membership for given value.
 
 All function should be callable just like name implies.
 """
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 
-class FuzzyMembershipFunction(metaclass=ABCMeta):
+class FuzzyMembershipFunction(ABC):
     """Base class for membership functions in fuzzy logic."""
 
     @abstractmethod
