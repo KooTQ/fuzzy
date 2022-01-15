@@ -58,6 +58,7 @@ class TNorm(FuzzyOperator):
             res = ff(value)
             if res == 0:
                 return 0.
+            results.append(res)
         return min(results)
 
 
@@ -80,6 +81,7 @@ class SNorm(FuzzyOperator):
             res = ff(value)
             if res == 1:
                 return 1.
+            results.append(res)
         return max(results)
 
 
