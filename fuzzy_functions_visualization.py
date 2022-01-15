@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from functions import TrapezoidFunction
-from operators._operators import TNorm, SNorm, StrongNegation
+from operators import TNorm, SNorm, StrongNegation
 
 
 def visualize_fuzzy_trapezoid_functions(

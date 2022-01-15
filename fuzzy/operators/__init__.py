@@ -15,4 +15,6 @@ For complex scenarios' membership functions can be joined with operators
   fuzzy strong negation.
 
 """
-from fuzzy.operators._operators import FuzzyOperator
+from fuzzy.operators._operators import (
+    FuzzyOperator, TNorm, SNorm, StrongNegation
+)
