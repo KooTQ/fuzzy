@@ -4,7 +4,7 @@ Operators on fuzzy membership functions.
 from abc import ABC, abstractmethod
 from typing import Union, List
 
-from functions import FuzzyMembershipFunction
+from fuzzy.functions import FuzzyMembershipFunction
 
 Operatable = Union[FuzzyMembershipFunction, "FuzzyOperator"]
 
