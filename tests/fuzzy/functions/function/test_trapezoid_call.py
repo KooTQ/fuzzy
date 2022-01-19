@@ -14,6 +14,9 @@ Unit tests TrapezoidFunction.__call__:
   1. To ``TrapezoidFunction(0, 1, 2, 3)`` argument ``0.5`` assert ``0.5``
   etc.
 """
+import random
+from typing import Union, Tuple
+
 from fuzzy.functions import (
     TrapezoidFunction, InfiniteTrapezoidFunction, TriangularFunction
 )
@@ -184,3 +187,66 @@ def test_multiple_infinite_trapezoids_call_correct_values() -> None:
     test_infinite_trapezoid_call_correct_values(-1000, 1, 'right')
     test_infinite_trapezoid_call_correct_values(0, 100, 'right')
     test_infinite_trapezoid_call_correct_values(0, 1000, 'right')
+
+
+def test_infinite_inputs_triangular_function() -> None:
+    triangular_funct = create_random_triangular_function()
+    out_low_inf = triangular_funct(float('-inf'))
+    assert 0. <= out_low_inf <= 1.
+    out_high_inf = triangular_funct(float('inf'))
+    assert 0. <= out_high_inf <= 1.
+
+
+def test_infinite_inputs_trapezoid_function() -> None:
+    triangular_funct = create_random_trapezoid_function()
+    out_low_inf = triangular_funct(float('-inf'))
+    assert 0. <= out_low_inf <= 1.
+    out_high_inf = triangular_funct(float('inf'))
+    assert 0. <= out_high_inf <= 1.
+
+
+def test_infinite_inputs_infinite_trapezoid_function() -> None:
+    left = random.randint(-100, 100) * (random.random() ** 2)
+    right = left + random.randint(1, 10) * (random.random() ** 2)
+    left_inf_funct = InfiniteTrapezoidFunction(
+        left, right, 'left'
+    )
+    out_low_inf = left_inf_funct(float('-inf'))
+    assert 1. == out_low_inf
+    out_high_inf = left_inf_funct(float('inf'))
+    assert 0. == out_high_inf
+
+    right_inf_funct = InfiniteTrapezoidFunction(
+        left, right, 'right'
+    )
+    out_low_inf = right_inf_funct(float('-inf'))
+    assert 0. == out_low_inf
+    out_high_inf = right_inf_funct(float('inf'))
+    assert 1. == out_high_inf
+
+
+def create_random_trapezoid_function(
+        include_positions: bool = False
+) -> Union[TrapezoidFunction, Tuple[TrapezoidFunction, float, float]]:
+    base = random.randint(-100, 100)
+    left = base + (random.random() ** 2) * 100
+    top_l = left + (random.random() ** 2) * 100
+    top_r = top_l + (random.random() ** 2) * 100
+    right = top_r + (random.random() ** 2) * 100
+    output_function = TrapezoidFunction(left, top_l, top_r, right)
+    if include_positions:
+        return output_function, left, right
+    return output_function
+
+
+def create_random_triangular_function(
+        include_positions: bool = False
+) -> Union[TriangularFunction, Tuple[TriangularFunction, float, float]]:
+    base = random.randint(-100, 100)
+    left = base + (random.random() ** 2) * 100
+    top = left + (random.random() ** 2) * 100
+    right = top + (random.random() ** 2) * 100
+    output_function = TriangularFunction(left, top, right)
+    if include_positions:
+        return output_function, left, right
+    return output_function

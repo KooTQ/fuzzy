@@ -23,12 +23,16 @@ Operators should be tested on:
   - combination of any and all of the above
 """
 import random
+
 import numpy as np
 
 from fuzzy.operators import StrongNegation, TNorm, SNorm
 from fuzzy.functions import (
-    TriangularFunction, InfiniteTrapezoidFunction, TrapezoidFunction
+    TriangularFunction, InfiniteTrapezoidFunction
 )
+
+from tests.fuzzy.functions.function.test_trapezoid_call import \
+    create_random_trapezoid_function, create_random_triangular_function
 
 
 def test_double_strong_negation_on_triangular_membership_functions() -> None:
@@ -44,13 +48,10 @@ def test_double_strong_negation_on_triangular_membership_function_n_times(
         n: int = 5
 ) -> None:
     for _ in range(n):
-        base = random.randint(-100, 100)
-        left = base + (random.random()**2) * 100
-        top = left + (random.random()**2) * 100
-        right = top + (random.random()**2) * 100
-        trial_funct = TriangularFunction(left, top, right)
-
-        values = np.linspace(base - 10, right + 10, 50)
+        trial_funct, left, right = create_random_triangular_function(
+            include_positions=True
+        )
+        values = np.linspace(left - 10, right + 10, 50)
         degrees_of_memb = np.array([trial_funct(v) for v in values])
         neg_neg_funct = StrongNegation(StrongNegation(trial_funct))
         degrees_of_memb_neg = np.array([neg_neg_funct(v) for v in values])
@@ -78,9 +79,9 @@ def test_10_tier_rule_operation_on_infinite_trapezoid_functions() -> None:
 
 
 def test_t_norm_not_higher_nor_lower_than_inner_trapezoid_functions() -> None:
-    funct1 = _create_random_trapezoid_function()
-    funct2 = _create_random_trapezoid_function()
-    funct3 = _create_random_trapezoid_function()
+    funct1 = create_random_trapezoid_function()
+    funct2 = create_random_trapezoid_function()
+    funct3 = create_random_trapezoid_function()
     op1 = TNorm(funct1, funct2)
     op2 = TNorm(funct1, funct2, funct3)
     values1 = np.linspace(funct1.lower_boundary - 1,
@@ -95,9 +96,9 @@ def test_t_norm_not_higher_nor_lower_than_inner_trapezoid_functions() -> None:
 
 
 def test_s_norm_not_higher_nor_lower_than_inner_trapezoid_functions() -> None:
-    funct1 = _create_random_trapezoid_function()
-    funct2 = _create_random_trapezoid_function()
-    funct3 = _create_random_trapezoid_function()
+    funct1 = create_random_trapezoid_function()
+    funct2 = create_random_trapezoid_function()
+    funct3 = create_random_trapezoid_function()
     op1 = SNorm(funct1, funct2)
     op2 = SNorm(funct1, funct2, funct3)
     values1 = np.linspace(funct1.lower_boundary - 1,
@@ -127,9 +128,9 @@ def _assert_higher_lower(values, f1, f2, f3, op1, op2) -> None:
 
 
 def test_t_norm_in_range_0_to_1() -> None:
-    funct1 = _create_random_trapezoid_function()
-    funct2 = _create_random_trapezoid_function()
-    funct3 = _create_random_trapezoid_function()
+    funct1 = create_random_trapezoid_function()
+    funct2 = create_random_trapezoid_function()
+    funct3 = create_random_trapezoid_function()
     op1 = TNorm(funct1, funct2)
     op2 = TNorm(funct1, funct2, funct3)
     values1 = np.linspace(funct1.lower_boundary - 1,
@@ -144,9 +145,9 @@ def test_t_norm_in_range_0_to_1() -> None:
 
 
 def test_s_norm_in_range_0_to_1() -> None:
-    funct1 = _create_random_trapezoid_function()
-    funct2 = _create_random_trapezoid_function()
-    funct3 = _create_random_trapezoid_function()
+    funct1 = create_random_trapezoid_function()
+    funct2 = create_random_trapezoid_function()
+    funct3 = create_random_trapezoid_function()
     op1 = SNorm(funct1, funct2)
     op2 = SNorm(funct1, funct2, funct3)
     values1 = np.linspace(funct1.lower_boundary - 1,
@@ -170,18 +171,44 @@ def _assert_0_to_1(values, op1, op2) -> None:
         assert op2_res >= 0.0
 
 
-def _create_random_trapezoid_function() -> TrapezoidFunction:
-    base = random.randint(-100, 100)
-    left = base + (random.random() ** 2) * 100
-    top_l = left + (random.random() ** 2) * 100
-    top_r = top_l + (random.random() ** 2) * 100
-    right = top_r + (random.random() ** 2) * 100
-    return TrapezoidFunction(left, top_l, top_r, right)
+def test_infinite_inputs_triangular_function() -> None:
+    triangular_funct = create_random_triangular_function()
+    out_low_inf = triangular_funct(float('-inf'))
+    assert 0. <= out_low_inf <= 1.
+    out_high_inf = triangular_funct(float('inf'))
+    assert 0. <= out_high_inf <= 1.
 
 
-def _create_random_triangular_function() -> TriangularFunction:
-    base = random.randint(-100, 100)
-    left = base + (random.random() ** 2) * 100
-    top = left + (random.random() ** 2) * 100
-    right = top + (random.random() ** 2) * 100
-    return TriangularFunction(left, top, right)
+def test_infinite_inputs_trapezoid_function() -> None:
+    triangular_funct = create_random_trapezoid_function()
+    out_low_inf = triangular_funct(float('-inf'))
+    assert 0. <= out_low_inf <= 1.
+    out_high_inf = triangular_funct(float('inf'))
+    assert 0. <= out_high_inf <= 1.
+
+
+def test_infinite_inputs_infinite_trapezoid_function() -> None:
+    left = random.randint(-100, 100) * (random.random() ** 2)
+    right = left + random.randint(1, 10) * (random.random() ** 2)
+    neg_left_inf_funct = StrongNegation(InfiniteTrapezoidFunction(
+        left, right, 'left'
+    ))
+    out_low_inf = neg_left_inf_funct(float('-inf'))
+    assert 0. <= out_low_inf <= 1.
+    out_high_inf = neg_left_inf_funct(float('inf'))
+    assert 0. <= out_high_inf <= 1.
+
+    s_normed_right_inf_funct = SNorm(
+        InfiniteTrapezoidFunction(left, right, 'right'),
+        neg_left_inf_funct
+    )
+    out_low_inf = s_normed_right_inf_funct(float('-inf'))
+    assert 0. == out_low_inf
+    out_high_inf = s_normed_right_inf_funct(float('inf'))
+    assert 1. == out_high_inf
+
+    t_normed = TNorm(s_normed_right_inf_funct, neg_left_inf_funct)
+    out_low_inf = t_normed(float('-inf'))
+    assert 0. == out_low_inf
+    out_high_inf = t_normed(float('inf'))
+    assert 1. == out_high_inf
