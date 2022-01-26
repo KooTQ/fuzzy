@@ -27,7 +27,7 @@ def test_triangular_function_call_correct_values(
         top: float = 0.5,
         right: float = 0.8
 ) -> None:
-    funct = TriangularFunction(left, top, right)
+    funct = TriangularFunction('test', left, top, right)
     args = [left - 1, left,
             (left + top) / 2,
             top,
@@ -72,6 +72,7 @@ def test_trapezoid_function_call_correct_values(
         upper_boundary: float = 0.8
 ) -> None:
     funct = TrapezoidFunction(
+        domain='test',
         lower_boundary=lower_boundary,
         min_full_boundary=min_full_boundary,
         max_full_boundary=max_full_boundary,
@@ -113,7 +114,7 @@ def assert_almost_equal_for_single_argument_function(
         expected_outputs
 ) -> None:
     for arg, out in zip(funct_args, expected_outputs):
-        res = funct(arg)
+        res = funct({'test': arg})
         assert round(res-out, 5) == 0
 
 
@@ -131,6 +132,7 @@ def test_infinite_trapezoid_call_correct_values(
         side: str = 'left'
 ) -> None:
     funct = InfiniteTrapezoidFunction(
+        domain='test',
         left_vertex=left_vertex,
         right_vertex=right_vertex,
         infinite_side=side
@@ -191,17 +193,17 @@ def test_multiple_infinite_trapezoids_call_correct_values() -> None:
 
 def test_infinite_inputs_triangular_function() -> None:
     triangular_funct = create_random_triangular_function()
-    out_low_inf = triangular_funct(float('-inf'))
+    out_low_inf = triangular_funct({'test': float('-inf')})
     assert 0. <= out_low_inf <= 1.
-    out_high_inf = triangular_funct(float('inf'))
+    out_high_inf = triangular_funct({'test': float('inf')})
     assert 0. <= out_high_inf <= 1.
 
 
 def test_infinite_inputs_trapezoid_function() -> None:
     triangular_funct = create_random_trapezoid_function()
-    out_low_inf = triangular_funct(float('-inf'))
+    out_low_inf = triangular_funct({'test': float('-inf')})
     assert 0. <= out_low_inf <= 1.
-    out_high_inf = triangular_funct(float('inf'))
+    out_high_inf = triangular_funct({'test': float('inf')})
     assert 0. <= out_high_inf <= 1.
 
 
@@ -209,19 +211,19 @@ def test_infinite_inputs_infinite_trapezoid_function() -> None:
     left = random.randint(-100, 100) * (random.random() ** 2)
     right = left + random.randint(1, 10) * (random.random() ** 2)
     left_inf_funct = InfiniteTrapezoidFunction(
-        left, right, 'left'
+        'test', left, right, 'left'
     )
-    out_low_inf = left_inf_funct(float('-inf'))
+    out_low_inf = left_inf_funct({'test': float('-inf')})
     assert 1. == out_low_inf
-    out_high_inf = left_inf_funct(float('inf'))
+    out_high_inf = left_inf_funct({'test': float('inf')})
     assert 0. == out_high_inf
 
     right_inf_funct = InfiniteTrapezoidFunction(
-        left, right, 'right'
+        'test', left, right, 'right'
     )
-    out_low_inf = right_inf_funct(float('-inf'))
+    out_low_inf = right_inf_funct({'test': float('-inf')})
     assert 0. == out_low_inf
-    out_high_inf = right_inf_funct(float('inf'))
+    out_high_inf = right_inf_funct({'test': float('inf')})
     assert 1. == out_high_inf
 
 
@@ -233,7 +235,7 @@ def create_random_trapezoid_function(
     top_l = left + (random.random() ** 2) * 100
     top_r = top_l + (random.random() ** 2) * 100
     right = top_r + (random.random() ** 2) * 100
-    output_function = TrapezoidFunction(left, top_l, top_r, right)
+    output_function = TrapezoidFunction('test', left, top_l, top_r, right)
     if include_positions:
         return output_function, left, right
     return output_function
@@ -246,7 +248,7 @@ def create_random_triangular_function(
     left = base + (random.random() ** 2) * 100
     top = left + (random.random() ** 2) * 100
     right = top + (random.random() ** 2) * 100
-    output_function = TriangularFunction(left, top, right)
+    output_function = TriangularFunction('test', left, top, right)
     if include_positions:
         return output_function, left, right
     return output_function

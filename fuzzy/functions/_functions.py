@@ -4,22 +4,41 @@ Fuzzy set membership functions calculate degree of membership for given value.
 All function should be callable just like name implies.
 """
 from abc import ABC, abstractmethod
+from typing import Dict
 
 
 class FuzzyMembershipFunction(ABC):
     """Base class for membership functions in fuzzy logic."""
 
+    domain: str
+    """
+    Domain in which fuzzy function implement fuzzy set, used to choose input.
+    For example domain of function "low temperature" is "temperature".
+    """
+
     @abstractmethod
-    def __call__(self, input_point: float) -> float:
+    def __call__(self, inputs: Dict[str, float]) -> float:
         """Return fuzzy set membership value for a given input point.
 
-        :param input_point: point in data-space
+        :param inputs: point in data-space
            to calculate membership degree for.
         :return: fuzzy set membership degree in range[0;1]. Represents in what
            degree given input_point is member of fuzzy set.
         """
         pass
 
+    def _get_input(
+            self,
+            inputs: Dict[str, float]
+    ) -> float:
+        try:
+            input_point = inputs[self.domain]
+        except KeyError:
+            raise AttributeError(
+                'Given inputs do not contain value of given domain.'
+                f' {self.domain} not in dictionary with keys {inputs.keys()}.'
+            )
+        return input_point
 
 class TrapezoidFunction(FuzzyMembershipFunction):
     """
@@ -42,6 +61,11 @@ class TrapezoidFunction(FuzzyMembershipFunction):
        ```(upper_boundary - value)/(upper_boundary - max_full_boundary)```.
 
     """
+    domain: str
+    """
+    Domain in which fuzzy function implement fuzzy set, used to choose input.
+    For example domain of function "low temperature" is "temperature".
+    """
     lower_boundary: float
     """Left-most vertex."""
     min_full_boundary: float
@@ -53,6 +77,7 @@ class TrapezoidFunction(FuzzyMembershipFunction):
 
     def __init__(
             self,
+            domain: str,
             lower_boundary: float,
             min_full_boundary: float,
             max_full_boundary: float,
@@ -61,13 +86,14 @@ class TrapezoidFunction(FuzzyMembershipFunction):
         """
         Construct object base on all vertices.
 
+        :param domain: domain of input values
         :param lower_boundary: Start of ascending slope;
           each input point value lower than lower_boundary will return 0.
-        :param min_full_boundary: End of ascending slope;
+        :param min_full_boundary: End of ascending slope
           each input point value between min_full_boundary and max_full_boundary
           will return 1.
-        :param max_full_boundary: Start of descending slope.
-        :param upper_boundary: End of descending slope.
+        :param max_full_boundary: Start of descending slope
+        :param upper_boundary: End of descending slope
         """
         assert min_full_boundary <= max_full_boundary
         if lower_boundary != float('-inf'):
@@ -82,6 +108,7 @@ class TrapezoidFunction(FuzzyMembershipFunction):
             right_infinite_trapezoid = max_full_boundary == float('inf')
             assert right_infinite_trapezoid
 
+        self.domain = domain
         self.lower_boundary = lower_boundary
         self.min_full_boundary = min_full_boundary
         self.max_full_boundary = max_full_boundary
@@ -89,7 +116,7 @@ class TrapezoidFunction(FuzzyMembershipFunction):
         self._ascent_denominator = self.min_full_boundary - self.lower_boundary
         self._descent_denominator = self.upper_boundary - self.max_full_boundary
 
-    def __call__(self, input_point: float) -> float:
+    def __call__(self, inputs: Dict[str, float]) -> float:
         """
         Pass input point to get membership degree.
 
@@ -100,10 +127,10 @@ class TrapezoidFunction(FuzzyMembershipFunction):
           *. Descending slope - linear decrease from 1. to 0.
           *. End plateau - return 0.
 
-        :param input_point: input to calculate membership degree;
-          value must be of type capable of being compared to vertices.
-        :return: membership degree.
+        :param inputs: input to calculate membership degree
+        :return: membership degree
         """
+        input_point = self._get_input(inputs)
         # Start plateau.
         if input_point <= self.lower_boundary:
             return 0.
@@ -161,6 +188,7 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
     """
     def __init__(
             self,
+            domain: str,
             left_vertex: float,
             right_vertex: float,
             infinite_side: str = 'left'
@@ -168,14 +196,16 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
         """
         Construct trapezoid membership function based with single infinite side.
 
-        :param left_vertex: Point of start of slope.
-        :param right_vertex: Point of end of slope.
+        :param domain: domain of input values
+        :param left_vertex: Point of start of slope
+        :param right_vertex: Point of end of slope
         :param infinite_side: Defining which side contains high plateau;
-          possible values ```'left'``` and ```'right'```.
+          possible values ```'left'``` and ```'right'```
         """
         assert infinite_side in ['left', 'right']
         assert float('-inf') < left_vertex < right_vertex < float('inf')
 
+        self.domain = domain
         lower_boundary = min_full_boundary = float('-inf')
         max_full_boundary = upper_boundary = float('inf')
         if infinite_side == 'left':
@@ -185,6 +215,7 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
             lower_boundary = left_vertex
             min_full_boundary = right_vertex
         super(InfiniteTrapezoidFunction, self).__init__(
+            domain=domain,
             lower_boundary=lower_boundary,
             min_full_boundary=min_full_boundary,
             max_full_boundary=max_full_boundary,
@@ -192,7 +223,7 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
         )
         self.infinite_side = infinite_side
 
-    def __call__(self, input_point: float) -> float:
+    def __call__(self, inputs: Dict[str, float]) -> float:
         """
         Pass input point to get membership degree.
 
@@ -211,14 +242,16 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
           *. Ascending slope
           *. High plateau
 
-        :param input_point: input to calculate membership degree
-        :return: membership degree.
+        :param inputs: input to calculate membership degree
+        :return: membership degree
         """
+        input_point = self._get_input(inputs)
         if self.infinite_side == 'left':
             _input_point = max([input_point, self.max_full_boundary])
         else:
             _input_point = min([input_point, self.min_full_boundary])
-        return super().__call__(_input_point)
+        inputs[self.domain] = _input_point
+        return super().__call__(inputs)
 
 
 class TriangularFunction(TrapezoidFunction):
@@ -230,12 +263,17 @@ class TriangularFunction(TrapezoidFunction):
     _/\\_________
     _________/\\_
     """
-    def __init__(self, left: float, top: float, right: float):
+    def __init__(
+            self, domain: str,left: float, top: float, right: float
+    ) -> None:
         """
         Construct triangular membership function.
-        :param left: End of start low plateau, start of ascending slope.
-        :param top: End of ascending slope and start of descending slope.
-        :param right: End of descending slope, start of end low plateau.
+
+        :param domain: domain of input values
+        :param left: End of start low plateau, start of ascending slope
+        :param top: End of ascending slope and start of descending slope
+        :param right: End of descending slope, start of end low plateau
         """
-        super().__init__(lower_boundary=left, min_full_boundary=top,
-                         max_full_boundary=top, upper_boundary=right)
+        super().__init__(domain=domain, lower_boundary=left,
+                         min_full_boundary=top, max_full_boundary=top,
+                         upper_boundary=right)

@@ -26,7 +26,7 @@ import random
 
 import numpy as np
 
-from fuzzy.operators import StrongNegation, TNorm, SNorm
+from fuzzy.operators import StrongNegation, TNorm, SNorm, Operatable
 from fuzzy.functions import (
     TriangularFunction, InfiniteTrapezoidFunction
 )
@@ -36,11 +36,12 @@ from tests.fuzzy.functions.function.test_trapezoid_call import \
 
 
 def test_double_strong_negation_on_triangular_membership_functions() -> None:
-    trial_funct = TriangularFunction(0, 1, 2)
+    trial_funct = TriangularFunction('test', 0, 1, 2)
     values = np.linspace(-2, 3, 50)
-    degrees_of_memb = np.array([trial_funct(v) for v in values])
+    degrees_of_memb = np.array([trial_funct({'test': v}) for v in values])
     neg_neg_funct = StrongNegation(StrongNegation(trial_funct))
-    degrees_of_memb_neg = np.array([neg_neg_funct(v) for v in values])
+    degrees_of_memb_neg = np.array([neg_neg_funct({'test': v})
+                                    for v in values])
     assert -1e-5 < np.sum(degrees_of_memb - degrees_of_memb_neg) < 1e-5
 
 
@@ -52,16 +53,17 @@ def test_double_strong_negation_on_triangular_membership_function_n_times(
             include_positions=True
         )
         values = np.linspace(left - 10, right + 10, 50)
-        degrees_of_memb = np.array([trial_funct(v) for v in values])
+        degrees_of_memb = np.array([trial_funct({'test': v}) for v in values])
         neg_neg_funct = StrongNegation(StrongNegation(trial_funct))
-        degrees_of_memb_neg = np.array([neg_neg_funct(v) for v in values])
+        degrees_of_memb_neg = np.array([neg_neg_funct({'test': v})
+                                        for v in values])
         assert -1e-5 < np.sum(degrees_of_memb - degrees_of_memb_neg) < 1e-5
 
 
 def test_10_tier_rule_operation_on_infinite_trapezoid_functions() -> None:
-    funct1 = InfiniteTrapezoidFunction(0.2, 0.5, 'left')
-    funct2 = InfiniteTrapezoidFunction(-0.2, 20, 'left')
-    funct3 = InfiniteTrapezoidFunction(20, 20.1, 'right')
+    funct1 = InfiniteTrapezoidFunction('test', 0.2, 0.5, 'left')
+    funct2 = InfiniteTrapezoidFunction('test', -0.2, 20, 'left')
+    funct3 = InfiniteTrapezoidFunction('test', 20, 20.1, 'right')
     op1 = StrongNegation(funct1)
     op2 = TNorm(op1, funct1)
     op3 = SNorm(op2, funct2)
@@ -74,7 +76,7 @@ def test_10_tier_rule_operation_on_infinite_trapezoid_functions() -> None:
     op10 = SNorm(op8, op9, op4)
     values = np.linspace(-1, 21, 200)
     for v in values:
-        res = op10(v)
+        res = op10({'test': v})
         assert 0. <= res <=1
 
 
@@ -112,19 +114,23 @@ def test_s_norm_not_higher_nor_lower_than_inner_trapezoid_functions() -> None:
     _assert_higher_lower(values3, funct1, funct2, funct3, op1, op2)
 
 
-def _assert_higher_lower(values, f1, f2, f3, op1, op2) -> None:
+def _assert_higher_lower(
+        values: np.ndarray,
+        f1: Operatable,
+        f2: Operatable,
+        f3: Operatable,
+        op1: Operatable,
+        op2: Operatable) -> None:
     for v in values:
-        res1 = f1(v)
-        res2 = f2(v)
-        res3 = f3(v)
-        op1_res = op1(v)
-        op2_res = op2(v)
+        res1 = f1({'test': v})
+        res2 = f2({'test': v})
+        res3 = f3({'test': v})
+        op1_res = op1({'test': v})
+        op2_res = op2({'test': v})
         assert op1_res <= max([res1, res2, res3])
         assert op2_res <= max([res1, res2, res3])
         assert op1_res >= min([res1, res2, res3])
         assert op2_res >= min([res1, res2, res3])
-
-
 
 
 def test_t_norm_in_range_0_to_1() -> None:
@@ -161,10 +167,14 @@ def test_s_norm_in_range_0_to_1() -> None:
     _assert_0_to_1(values3, op1, op2)
 
 
-def _assert_0_to_1(values, op1, op2) -> None:
+def _assert_0_to_1(
+        values: np.ndarray,
+        op1: Operatable,
+        op2: Operatable
+) -> None:
     for v in values:
-        op1_res = op1(v)
-        op2_res = op2(v)
+        op1_res = op1({'test': v})
+        op2_res = op2({'test': v})
         assert op1_res <= 1.0
         assert op2_res <= 1.0
         assert op1_res >= 0.0
@@ -173,17 +183,17 @@ def _assert_0_to_1(values, op1, op2) -> None:
 
 def test_infinite_inputs_triangular_function() -> None:
     triangular_funct = create_random_triangular_function()
-    out_low_inf = triangular_funct(float('-inf'))
+    out_low_inf = triangular_funct({'test': float('-inf')})
     assert 0. <= out_low_inf <= 1.
-    out_high_inf = triangular_funct(float('inf'))
+    out_high_inf = triangular_funct({'test': float('inf')})
     assert 0. <= out_high_inf <= 1.
 
 
 def test_infinite_inputs_trapezoid_function() -> None:
     triangular_funct = create_random_trapezoid_function()
-    out_low_inf = triangular_funct(float('-inf'))
+    out_low_inf = triangular_funct({'test': float('-inf')})
     assert 0. <= out_low_inf <= 1.
-    out_high_inf = triangular_funct(float('inf'))
+    out_high_inf = triangular_funct({'test': float('inf')})
     assert 0. <= out_high_inf <= 1.
 
 
@@ -191,24 +201,24 @@ def test_infinite_inputs_infinite_trapezoid_function() -> None:
     left = random.randint(-100, 100) * (random.random() ** 2)
     right = left + random.randint(1, 10) * (random.random() ** 2)
     neg_left_inf_funct = StrongNegation(InfiniteTrapezoidFunction(
-        left, right, 'left'
+        'test', left, right, 'left'
     ))
-    out_low_inf = neg_left_inf_funct(float('-inf'))
+    out_low_inf = neg_left_inf_funct({'test': float('-inf')})
     assert 0. <= out_low_inf <= 1.
-    out_high_inf = neg_left_inf_funct(float('inf'))
+    out_high_inf = neg_left_inf_funct({'test': float('inf')})
     assert 0. <= out_high_inf <= 1.
 
     s_normed_right_inf_funct = SNorm(
-        InfiniteTrapezoidFunction(left, right, 'right'),
+        InfiniteTrapezoidFunction('test', left, right, 'right'),
         neg_left_inf_funct
     )
-    out_low_inf = s_normed_right_inf_funct(float('-inf'))
+    out_low_inf = s_normed_right_inf_funct({'test': float('-inf')})
     assert 0. == out_low_inf
-    out_high_inf = s_normed_right_inf_funct(float('inf'))
+    out_high_inf = s_normed_right_inf_funct({'test': float('inf')})
     assert 1. == out_high_inf
 
     t_normed = TNorm(s_normed_right_inf_funct, neg_left_inf_funct)
-    out_low_inf = t_normed(float('-inf'))
+    out_low_inf = t_normed({'test': float('-inf')})
     assert 0. == out_low_inf
-    out_high_inf = t_normed(float('inf'))
+    out_high_inf = t_normed({'test': float('inf')})
     assert 1. == out_high_inf

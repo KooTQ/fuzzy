@@ -2,7 +2,7 @@
 Operators on fuzzy membership functions.
 """
 from abc import ABC, abstractmethod
-from typing import Union, List
+from typing import Union, List, Dict
 
 from fuzzy.functions import FuzzyMembershipFunction
 
@@ -36,12 +36,12 @@ class FuzzyOperator(ABC):
     @abstractmethod
     def __call__(
             self,
-            value: float
+            inputs: Dict[str, float]
     ) -> float:
         """
         Call pipeline of in self.functions and apply on result operator.
         
-        :param value: value to pass through FuzzyMembershipFunctions
+        :param inputs:  value to pass through FuzzyMembershipFunctions
         :return: result of pipeline
         """
 
@@ -52,10 +52,10 @@ class TNorm(FuzzyOperator):
     Could be read as "AND" operator.
     """
 
-    def __call__(self, value: float) -> float:
+    def __call__(self, inputs: Dict[str, float]) -> float:
         results = []
         for ff in self.functions:
-            res = ff(value)
+            res = ff(inputs)
             if res == 0:
                 return 0.
             results.append(res)
@@ -69,16 +69,16 @@ class SNorm(FuzzyOperator):
     Could be read as "OR" operator.
     """
 
-    def __call__(self, value: float) -> float:
+    def __call__(self, inputs: Dict[str, float]) -> float:
         """
         Pass through fuzzy function and negate option.
 
-        :param value: value to calculate negation on given function
+        :param inputs:  value to calculate negation on given function
         :return: negated degree of membership
         """
         results = []
         for ff in self.functions:
-            res = ff(value)
+            res = ff(inputs)
             if res == 1:
                 return 1.
             results.append(res)
@@ -103,11 +103,11 @@ class StrongNegation(FuzzyOperator):
         """
         super().__init__(function)
 
-    def __call__(self, value: float) -> float:
+    def __call__(self, inputs: Dict[str, float]) -> float:
         """
         Pass through fuzzy function and negate option.
 
-        :param value: value to calculate negation on given function
+        :param inputs: value to calculate negation on given function
         :return: negated degree of membership
         """
-        return 1 - self.functions[0](value)
+        return 1 - self.functions[0](inputs)
