@@ -1,3 +1,0 @@
-
-class FuzzySet:
-    pass
