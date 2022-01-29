@@ -3,8 +3,8 @@ Fuzzy set membership functions calculate degree of membership for given value.
 
 All function should be callable just like name implies.
 """
+from typing import Dict, Optional
 from abc import ABC, abstractmethod
-from typing import Dict
 
 
 class FuzzyMembershipFunction(ABC):
@@ -15,6 +15,8 @@ class FuzzyMembershipFunction(ABC):
     Domain in which fuzzy function implement fuzzy set, used to choose input.
     For example domain of function "low temperature" is "temperature".
     """
+    grade: Optional[str]
+    """Grade of fuzzy function. Optional, for model explainability."""
 
     @abstractmethod
     def __call__(self, inputs: Dict[str, float]) -> float:
@@ -66,6 +68,10 @@ class TrapezoidFunction(FuzzyMembershipFunction):
     Domain in which fuzzy function implement fuzzy set, used to choose input.
     For example domain of function "low temperature" is "temperature".
     """
+    grade: str
+    """
+    Grade of fuzzy function. Optional. Can be used for model explainability.
+    """
     lower_boundary: float
     """Left-most vertex."""
     min_full_boundary: float
@@ -82,6 +88,7 @@ class TrapezoidFunction(FuzzyMembershipFunction):
             min_full_boundary: float,
             max_full_boundary: float,
             upper_boundary: float,
+            grade: str = ''
     ) -> None:
         """
         Construct object base on all vertices.
@@ -94,6 +101,7 @@ class TrapezoidFunction(FuzzyMembershipFunction):
           will return 1.
         :param max_full_boundary: Start of descending slope
         :param upper_boundary: End of descending slope
+        :param grade: for printing and plotting
         """
         assert min_full_boundary <= max_full_boundary
         if lower_boundary != float('-inf'):
@@ -108,6 +116,7 @@ class TrapezoidFunction(FuzzyMembershipFunction):
             right_infinite_trapezoid = max_full_boundary == float('inf')
             assert right_infinite_trapezoid
 
+        self.grade = grade
         self.domain = domain
         self.lower_boundary = lower_boundary
         self.min_full_boundary = min_full_boundary
@@ -191,12 +200,14 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
             domain: str,
             left_vertex: float,
             right_vertex: float,
-            infinite_side: str = 'left'
+            infinite_side: str = 'left',
+            grade: str = ''
     ) -> None:
         """
         Construct trapezoid membership function based with single infinite side.
 
         :param domain: domain of input values
+        :param grade: for printing and plotting
         :param left_vertex: Point of start of slope
         :param right_vertex: Point of end of slope
         :param infinite_side: Defining which side contains high plateau;
@@ -206,6 +217,7 @@ class InfiniteTrapezoidFunction(TrapezoidFunction):
         assert float('-inf') < left_vertex < right_vertex < float('inf')
 
         self.domain = domain
+        self.grade = grade
         lower_boundary = min_full_boundary = float('-inf')
         max_full_boundary = upper_boundary = float('inf')
         if infinite_side == 'left':
@@ -264,16 +276,22 @@ class TriangularFunction(TrapezoidFunction):
     _________/\\_
     """
     def __init__(
-            self, domain: str,left: float, top: float, right: float
+            self,
+            domain: str,
+            left: float,
+            top: float,
+            right: float,
+            grade: str = ''
     ) -> None:
         """
         Construct triangular membership function.
 
         :param domain: domain of input values
+        :param grade: for printing and plotting
         :param left: End of start low plateau, start of ascending slope
         :param top: End of ascending slope and start of descending slope
         :param right: End of descending slope, start of end low plateau
         """
         super().__init__(domain=domain, lower_boundary=left,
                          min_full_boundary=top, max_full_boundary=top,
-                         upper_boundary=right)
+                         upper_boundary=right, grade=grade)

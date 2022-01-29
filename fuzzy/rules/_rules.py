@@ -4,7 +4,6 @@ Implementation of fuzzy rules.
 from typing import Dict
 
 from fuzzy.operators import Operatable
-from fuzzy.functions import FuzzyMembershipFunction
 
 
 class FuzzyRule:
@@ -13,10 +12,17 @@ class FuzzyRule:
     """
     operation: Operatable
     """Operation which result will point to functions activation."""
-    function: FuzzyMembershipFunction
-    """Function pointed to by operation."""
     activation: float
     """Maximal amount of activating function."""
+
+    def __init__(
+            self,
+
+    ) -> None:
+        """
+
+        """
+        pass
 
     def __call__(
             self,
