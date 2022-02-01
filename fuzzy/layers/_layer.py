@@ -72,6 +72,13 @@ class FuzzyLayer:
             inputs: Dict[str, float],
             samplings: int = 100
     ) -> Tuple[float, float]:
+        """
+        Estimate center of mass via quantized integral method.
+
+        :param inputs: domain indexed measurements
+        :param samplings: amount of quantized subdivisions
+        :return: a pair of coordinates `(x, y)`
+        """
         space = np.linspace(
             start=self.domain_range[0], stop=self.domain_range[1], num=samplings
         )
@@ -83,18 +90,27 @@ class FuzzyLayer:
 
         for i in range(len(self.functions)):
             cut_off_val = self.predicates[i](inputs)
-            for val in space:
+            for j in range(len(space)):
                 if cut_off_val == 0:
-                    domain_activations[val].append(0)
+                    domain_activations[j].append(0)
                 else:
-                    activation = self.functions[i](val)
-                    domain_activations[val].append(max(activation, cut_off_val))
-        full_domain = []
-        sub_areas = []
-        for activations in domain_activations:
+                    activation = self.functions[i](space[j])
+                    domain_activations[j].append(
+                        min(activation, cut_off_val)
+                    )
+        area = 0.
+        x_sub_value = 0.
+        y_sub_value = 0.
+        for activations, x in zip(domain_activations, space):
             best_val = max(activations)
-            full_domain.append(best_val)
-            sub_areas.append(best_val * delta)
-        area = sum(sub_areas)
-        raise NotImplementedError()
-#
+            sub_area = best_val * delta
+            area += sub_area
+            x_sub_value += sub_area * x
+            y_sub_value += sub_area * sub_area / 2
+        if area > 0:
+            x_coord = x_sub_value / area
+            y_coord = y_sub_value / area
+        else:
+            x_coord = sum(self.domain_range) / 2
+            y_coord = 0.
+        return x_coord, y_coord
